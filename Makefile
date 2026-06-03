@@ -8,10 +8,15 @@ MARKDOWNLINT ?= markdownlint-cli2
 
 MD_GLOBS := **/*.md \#node_modules
 
-.PHONY: help lint lint-md test-scripts ci check-tools
+.PHONY: help lint lint-md test-scripts ci check-tools hooks
 
 help: ## Show this help.
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-16s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+hooks: ## Enable repo-local git hooks (pre-push runs make ci).
+	git config core.hooksPath .githooks
+	@echo "hooks enabled: $$(git config core.hooksPath)"
+	@echo "skip individually with: git push --no-verify"
 
 lint: lint-md ## Run every linter (markdown only — no schemas in this repo).
 

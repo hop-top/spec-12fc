@@ -80,6 +80,18 @@ Factors without an active leaf fall back to `skip` in the matrix (grey).
 
 The full specification lives in [`specs/v0.1/spec.md`](specs/v0.1/spec.md). This Action is the executable counterpart: every `MUST` in the spec maps to a check the gate enforces.
 
+## Contributing
+
+Local checks mirror CI:
+
+```bash
+make hooks     # one-time: enable .githooks/pre-push (runs make ci on every push)
+make ci        # lint + tests
+make check-tools
+```
+
+Requires `python3` and `markdownlint-cli2` (`npm i -g markdownlint-cli2`).
+
 ## License
 
 CC-BY-4.0 for the spec text; MIT for examples and this Action's code.

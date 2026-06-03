@@ -6,15 +6,23 @@
 //   - non-aligned tables (factor tables grow rows; alignment churns the file)
 //   - missing blank lines around headings/lists in CHANGELOG (Keep-a-Changelog)
 //   - fenced blocks without a language (grammar/notation snippets)
+//   - duplicate headings (spec.md repeats ### Requirement / ### Rationale
+//     per factor — structural, not a defect)
+//   - $-prefixed shell snippets in code blocks (common spec convention;
+//     output is shown separately when relevant)
+//   - first-line non-h1 (factor docs lead with a back-nav link)
 {
   "config": {
     "default": true,
     "MD013": false,
-    "MD033": false,
-    "MD060": false,
+    "MD014": false,
     "MD022": false,
+    "MD024": false,
     "MD032": false,
-    "MD040": false
+    "MD033": false,
+    "MD040": false,
+    "MD041": false,
+    "MD060": false
   },
   "globs": [
     "**/*.md"

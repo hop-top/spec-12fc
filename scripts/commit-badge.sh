@@ -12,7 +12,7 @@ if ! git diff --quiet -- "$BADGE_PATH"; then
   git config user.name  "github-actions[bot]"
   git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
   git add "$BADGE_PATH"
-  git commit -m "chore(badge): update 12fcc verdict"
+  git commit -m "chore(badge): update 12fc verdict"
   git push origin "HEAD:$TARGET"
   echo "Badge committed to $TARGET"
 else

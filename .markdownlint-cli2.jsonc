@@ -1,4 +1,4 @@
-// markdownlint-cli2 config for 12-factor-ai-cli-apps.
+// markdownlint-cli2 config for spec-12fc.
 //
 // Lint prose for quality but permit:
 //   - long lines (specs cite URLs + cite blocks; wrapping hurts diffability)

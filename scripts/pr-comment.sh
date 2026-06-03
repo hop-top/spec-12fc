@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Post or update a sticky PR comment with the 12fcc verdict.
+# Post or update a sticky PR comment with the 12fc verdict.
 # Identified by a hidden marker so re-runs replace prior comments
 # instead of stacking.
 set -euo pipefail
@@ -9,7 +9,7 @@ REPO="${REPO:?missing}"
 REPORT="${REPORT_PATH:?missing}"
 BADGE_URL="${BADGE_URL:-}"
 VERDICT="${VERDICT:-unknown}"
-MARKER="<!-- 12fcc-action -->"
+MARKER="<!-- 12fc-action -->"
 
 body=$(python3 - "$REPORT" "$VERDICT" "$BADGE_URL" <<'PY'
 import json, sys
@@ -17,7 +17,7 @@ report_path, verdict, badge_url = sys.argv[1], sys.argv[2], sys.argv[3]
 with open(report_path) as f: r = json.load(f)
 s = r.get("summary", {})
 lines = [
-  "<!-- 12fcc-action -->",
+  "<!-- 12fc-action -->",
   "## 12-Factor CLI Conformance",
   "",
 ]

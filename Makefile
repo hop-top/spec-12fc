@@ -1,4 +1,4 @@
-# 12-factor-ai-cli-apps spec repo — local + CI tooling
+# spec-12fc spec repo — local + CI tooling
 #
 # All targets idempotent, run from repo root. CI mirrors these in
 # .github/workflows/validate.yml; keep them in sync.

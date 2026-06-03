@@ -3,15 +3,15 @@
 A GitHub Action that verifies a CLI conforms to the [12-Factor AI-CLI specification](specs/v0.1/spec.md), generates a structured JSON report, a shields.io endpoint-badge JSON, and (optionally) SARIF results that annotate the PR diff via GitHub code-scanning.
 
 ```yaml
-- uses: ideacrafterslabs/12-factor-ai-cli-apps@v1
+- uses: hop-top/spec-12fc@v1
 ```
 
 ## What it does
 
 - Runs the `kit conformance` gate tree (`verify-no-leak`, `verify-stories`, optional `grade`) against your CLI source.
-- Aggregates leaf results into a single `12fcc-report.json` with stable schema.
-- Builds a per-factor matrix (`12fcc-matrix.json`) covering all 12 factors of the spec.
-- Generates `.12fcc.json` — the shields.io endpoint-badge payload — so a single badge in your README always reflects the latest verdict.
+- Aggregates leaf results into a single `12fc-report.json` with stable schema.
+- Builds a per-factor matrix (`12fc-matrix.json`) covering all 12 factors of the spec.
+- Generates `.12fc.json` — the shields.io endpoint-badge payload — so a single badge in your README always reflects the latest verdict.
 - Emits SARIF and uploads to GitHub code-scanning so individual findings render inline on the PR diff.
 - Posts a sticky PR comment with the verdict, leaf-level breakdown, and the first 20 findings.
 - Optionally commits the updated badge JSON back to your default branch on `push` events.
@@ -20,10 +20,10 @@ A GitHub Action that verifies a CLI conforms to the [12-Factor AI-CLI specificat
 
 | File | Purpose |
 |------|---------|
-| `12fcc-report.json` | Full aggregated report (schema `12fcc/v1`) |
-| `12fcc-matrix.json` | Per-factor pass/fail matrix |
-| `.12fcc.json` | shields.io endpoint-badge payload |
-| `12fcc.sarif` | SARIF v2.1.0 results for code-scanning |
+| `12fc-report.json` | Full aggregated report (schema `12fc/v1`) |
+| `12fc-matrix.json` | Per-factor pass/fail matrix |
+| `.12fc.json` | shields.io endpoint-badge payload |
+| `12fc.sarif` | SARIF v2.1.0 results for code-scanning |
 
 ## Exit codes
 
@@ -48,7 +48,7 @@ See [`action.yml`](action.yml). Defaults are tuned for the common case (PR gate 
 After the Action runs at least once on your default branch with `commit-badge: true`, add this to your README:
 
 ```markdown
-![12fcc](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/<owner>/<repo>/main/.12fcc.json)
+![12fc](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/<owner>/<repo>/main/.12fc.json)
 ```
 
 The badge colour is verdict-driven: green (pass), red (fail), grey (ungradable / not yet run).

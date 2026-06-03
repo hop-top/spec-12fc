@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Local smoke test for the 12fcc Action scripts.
+# Local smoke test for the 12fc Action scripts.
 #
 # Strategy: substitute a stub `kit` binary on PATH, run scripts/run.sh
 # against a fixture, assert the produced report / matrix / badge match
@@ -72,7 +72,7 @@ run_scenario() {
     return
   fi
   assert_json_path "$tmp/report.json" "['schemaVersion']" "1" "report.schemaVersion"
-  assert_json_path "$tmp/report.json" "['specVersion']" "12fcc/v1" "report.specVersion"
+  assert_json_path "$tmp/report.json" "['specVersion']" "12fc/v1" "report.specVersion"
 
   # matrix.json shape: 12 factors
   if [ ! -f "$tmp/matrix.json" ]; then

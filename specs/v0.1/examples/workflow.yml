@@ -18,7 +18,7 @@ jobs:
         with:
           fetch-depth: 0     # full history so --diff=auto can resolve base
 
-      - uses: ideacrafterslabs/12-factor-ai-cli-apps@v1
+      - uses: hop-top/spec-12fc@v1
         with:
           command: all
           paths: cmd/,internal/

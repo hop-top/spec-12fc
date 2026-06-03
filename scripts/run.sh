@@ -15,10 +15,10 @@ CASSETTE_DIR="${INPUT_CASSETTE_DIR:-}"
 GRADE_SERVICE="${INPUT_GRADE_SERVICE:-}"
 GRADE_TOKEN="${INPUT_GRADE_TOKEN:-}"
 GRADE_TIER="${INPUT_GRADE_TIER:-1}"
-REPORT_PATH="${INPUT_REPORT_PATH:-12fcc-report.json}"
-BADGE_PATH="${INPUT_BADGE_PATH:-.12fcc.json}"
-MATRIX_PATH="${INPUT_MATRIX_PATH:-12fcc-matrix.json}"
-SARIF_PATH="${INPUT_SARIF_PATH:-12fcc.sarif}"
+REPORT_PATH="${INPUT_REPORT_PATH:-12fc-report.json}"
+BADGE_PATH="${INPUT_BADGE_PATH:-.12fc.json}"
+MATRIX_PATH="${INPUT_MATRIX_PATH:-12fc-matrix.json}"
+SARIF_PATH="${INPUT_SARIF_PATH:-12fc.sarif}"
 
 # --paths normaliser: kit accepts --paths=<csv>; we pass through.
 PATHS_FLAG="--paths=${PATHS_CSV}"
@@ -136,7 +136,7 @@ leaves = sys.argv[2:]
 tmp = os.environ.get("RUN_TMP") or os.path.dirname(report_path) or "."
 out = {
   "schemaVersion": 1,
-  "specVersion": "12fcc/v1",
+  "specVersion": "12fc/v1",
   "generatedAt": datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
   "tool": "kit conformance",
   "commit": os.environ.get("GITHUB_SHA", ""),
@@ -251,11 +251,11 @@ with open(report_path) as f:
   rep = json.load(f)
 results = []
 for fnd in rep.get("findings", []):
-  msg = fnd.get("message") or fnd.get("rule") or fnd.get("raw") or "12fcc finding"
+  msg = fnd.get("message") or fnd.get("rule") or fnd.get("raw") or "12fc finding"
   loc = fnd.get("path") or fnd.get("file") or ""
   line = int(fnd.get("line") or 1)
   results.append({
-    "ruleId": fnd.get("code") or fnd.get("rule") or f"12fcc/{fnd.get('leaf','unknown')}",
+    "ruleId": fnd.get("code") or fnd.get("rule") or f"12fc/{fnd.get('leaf','unknown')}",
     "level": "error",
     "message": {"text": msg},
     "locations": [{
@@ -270,8 +270,8 @@ sarif = {
   "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0.json",
   "runs": [{
     "tool": {"driver": {
-      "name": "12fcc",
-      "informationUri": "https://github.com/ideacrafterslabs/12-factor-ai-cli-apps",
+      "name": "12fc",
+      "informationUri": "https://github.com/hop-top/spec-12fc",
       "rules": [],
     }},
     "results": results,

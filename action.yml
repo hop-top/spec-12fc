@@ -1,6 +1,6 @@
 name: '12-Factor CLI Conformance'
 description: 'Verify a CLI conforms to the 12-factor AI-CLI specification. Emits a JSON report, a shields.io endpoint-badge JSON, and (optionally) SARIF for PR annotations.'
-author: 'ideacrafterslabs'
+author: 'hop-top'
 branding:
   icon: 'check-square'
   color: 'green'
@@ -69,22 +69,22 @@ inputs:
   report-path:
     description: 'Path to write the aggregated JSON report.'
     required: false
-    default: '12fcc-report.json'
+    default: '12fc-report.json'
 
   badge-path:
     description: 'Path to write the shields.io endpoint-badge JSON.'
     required: false
-    default: '.12fcc.json'
+    default: '.12fc.json'
 
   matrix-path:
     description: 'Path to write the per-factor matrix JSON consumed by the badge generator.'
     required: false
-    default: '12fcc-matrix.json'
+    default: '12fc-matrix.json'
 
   sarif-path:
     description: 'Path to write SARIF (empty disables SARIF generation).'
     required: false
-    default: '12fcc.sarif'
+    default: '12fc.sarif'
 
   upload-sarif:
     description: 'Upload SARIF to GitHub code-scanning so findings annotate the PR diff.'
@@ -164,7 +164,7 @@ runs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: 12fcc-report
+        name: 12fc-report
         path: |
           ${{ steps.run.outputs.report-path }}
           ${{ steps.run.outputs.badge-path }}
@@ -178,7 +178,7 @@ runs:
       continue-on-error: true
       with:
         sarif_file: ${{ inputs.sarif-path }}
-        category: 12fcc
+        category: 12fc
 
     - name: Sticky PR comment
       if: always() && inputs.pr-comment == 'true' && github.event_name == 'pull_request'
@@ -212,8 +212,8 @@ runs:
         IFS=',' read -ra fail_codes <<< "${{ inputs.fail-on }}"
         for c in "${fail_codes[@]}"; do
           if [ "$ec" = "$c" ]; then
-            echo "::error::12fcc failed with exit code $ec (in fail-on=${{ inputs.fail-on }})"
+            echo "::error::12fc failed with exit code $ec (in fail-on=${{ inputs.fail-on }})"
             exit "$ec"
           fi
         done
-        echo "12fcc exit code $ec is not in fail-on list; treating as pass"
+        echo "12fc exit code $ec is not in fail-on list; treating as pass"

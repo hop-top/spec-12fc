@@ -17,7 +17,7 @@
   "packages": {
     "specs/v0.1": {
       "release-type": "simple",
-      "component": "12factor-v0.1",
+      "component": "12fc-v0.1",
       "changelog-path": "CHANGELOG.md",
       "bump-minor-pre-major": true,
       "versioning": "prerelease",

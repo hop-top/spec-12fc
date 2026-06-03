@@ -18,7 +18,7 @@ contextual guidance based on the current situation:
 
 This is not chatty hand-holding. It is operational scaffolding.
 
-#### Docs are static. Guidance is situational.
+#### Docs are static; guidance is situational
 
 Traditional `--help` output:
 

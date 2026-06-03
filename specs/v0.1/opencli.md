@@ -72,6 +72,7 @@ This aims to be to CLIs what OpenAPI is to HTTP APIs.
 Version of the CLI schema standard itself.
 
 Example:
+
 ```json
 "schema_version": "clispec/v1"
 ```
@@ -88,6 +89,7 @@ Fields:
 - `supports_noninteractive`
 
 Example:
+
 ```json
 {
   "name": "mycli",
@@ -413,6 +415,7 @@ At least one stable command that returns the full capability graph in JSON.
 The CLI must support machine interface versioning.
 
 Example:
+
 ```bash
 mycli inspect --schema clispec/v1
 mycli deploy --output json --schema output/v2

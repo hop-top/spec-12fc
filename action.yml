@@ -62,9 +62,14 @@ inputs:
     default: '2,3,5'
 
   kit-version:
-    description: 'kit binary version to install (e.g. v0.4.0-alpha.3, or "latest").'
+    description: |
+      kit version to install. Accepts:
+        main      install from HEAD via `go install hop.top/kit/cmd/kit@main`
+        latest    resolve to the newest GitHub release tag, then install
+        vX.Y.Z   any concrete tag (prebuilt asset if available, else go install)
+      Defaults to `main` until kit publishes prebuilt release assets.
     required: false
-    default: 'latest'
+    default: 'main'
 
   report-path:
     description: 'Path to write the aggregated JSON report.'

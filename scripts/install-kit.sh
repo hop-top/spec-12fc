@@ -4,7 +4,7 @@
 # when a prebuilt asset is unavailable for the runner triple.
 set -euo pipefail
 
-VERSION="${INPUT_KIT_VERSION:-latest}"
+VERSION="${INPUT_KIT_VERSION:-main}"
 REPO="hop-top/kit"
 ACTION_BIN_DIR="${GITHUB_ACTION_PATH:-$(pwd)}/bin"
 mkdir -p "$ACTION_BIN_DIR"
@@ -28,26 +28,38 @@ esac
 ext=tar.gz
 [ "$os" = "windows" ] && ext=zip
 
-# Resolve "latest" to a concrete tag so subsequent runs are reproducible
-# in the run log.
+# Resolve "latest" to a concrete tag so the asset path can run. A branch ref
+# (e.g. "main") skips the asset path entirely — there's no prebuilt to fetch,
+# go install pulls the ref directly.
+is_tag=false
 if [ "$VERSION" = "latest" ]; then
   VERSION=$(gh release view --repo "$REPO" --json tagName --jq .tagName)
+  is_tag=true
+elif [[ "$VERSION" =~ ^v[0-9] ]]; then
+  is_tag=true
 fi
 
-asset="kit_${VERSION#v}_${os}_${arch}.${ext}"
 echo "::group::Installing kit ${VERSION} (${os}/${arch})"
-echo "asset=${asset}"
 
 tmp=$(mktemp -d)
-if gh release download "$VERSION" --repo "$REPO" --pattern "$asset" --dir "$tmp" 2>/dev/null; then
-  case "$ext" in
-    tar.gz) tar -xzf "$tmp/$asset" -C "$tmp" ;;
-    zip)    unzip -q "$tmp/$asset" -d "$tmp" ;;
-  esac
-  install -m 0755 "$tmp/kit" "$ACTION_BIN_DIR/kit" 2>/dev/null \
-    || install -m 0755 "$tmp/kit.exe" "$ACTION_BIN_DIR/kit.exe"
-else
-  echo "::warning::no prebuilt asset $asset; falling back to 'go install'"
+installed=false
+if $is_tag; then
+  asset="kit_${VERSION#v}_${os}_${arch}.${ext}"
+  echo "asset=${asset}"
+  if gh release download "$VERSION" --repo "$REPO" --pattern "$asset" --dir "$tmp" 2>/dev/null; then
+    case "$ext" in
+      tar.gz) tar -xzf "$tmp/$asset" -C "$tmp" ;;
+      zip)    unzip -q "$tmp/$asset" -d "$tmp" ;;
+    esac
+    install -m 0755 "$tmp/kit" "$ACTION_BIN_DIR/kit" 2>/dev/null \
+      || install -m 0755 "$tmp/kit.exe" "$ACTION_BIN_DIR/kit.exe"
+    installed=true
+  else
+    echo "::warning::no prebuilt asset $asset; falling back to 'go install'"
+  fi
+fi
+
+if ! $installed; then
   if ! command -v go >/dev/null 2>&1; then
     echo "::error::go toolchain not available and no prebuilt asset found"
     exit 4

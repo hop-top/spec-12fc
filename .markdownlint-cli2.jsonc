@@ -30,6 +30,7 @@
   "ignores": [
     "node_modules",
     "specs/v*/examples/**",
+    "specs/v*/CHANGELOG.md",
     "launch/**",
     "draft.md",
     "new.md",

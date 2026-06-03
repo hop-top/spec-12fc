@@ -1,0 +1,28 @@
+name: 12-Factor Conformance
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write          # only needed when commit-badge: true
+  pull-requests: write     # for the sticky PR comment
+  security-events: write   # for SARIF upload to code-scanning
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0     # full history so --diff=auto can resolve base
+
+      - uses: ideacrafterslabs/12-factor-ai-cli-apps@v1
+        with:
+          command: all
+          paths: cmd/,internal/
+          fail-on: 2,3,5
+          upload-sarif: true
+          pr-comment: true
+          commit-badge: ${{ github.event_name == 'push' }}

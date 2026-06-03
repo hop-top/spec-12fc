@@ -1,0 +1,32 @@
+// markdownlint-cli2 config for 12-factor-ai-cli-apps.
+//
+// Lint prose for quality but permit:
+//   - long lines (specs cite URLs + cite blocks; wrapping hurts diffability)
+//   - inline HTML (GitHub alert blocks > [!WARNING])
+//   - non-aligned tables (factor tables grow rows; alignment churns the file)
+//   - missing blank lines around headings/lists in CHANGELOG (Keep-a-Changelog)
+//   - fenced blocks without a language (grammar/notation snippets)
+{
+  "config": {
+    "default": true,
+    "MD013": false,
+    "MD033": false,
+    "MD060": false,
+    "MD022": false,
+    "MD032": false,
+    "MD040": false
+  },
+  "globs": [
+    "**/*.md"
+  ],
+  "ignores": [
+    "node_modules",
+    "specs/v*/examples/**",
+    "launch/**",
+    "draft.md",
+    "new.md",
+    "blog-jdx.md",
+    "prd.md",
+    "examples.md"
+  ]
+}

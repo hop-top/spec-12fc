@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# Stub `kit` binary for smoke tests. Reads $KIT_STUB_MODE to decide
+# what to emit for each leaf invocation:
+#   clean  → exit 0, emit empty findings
+#   leaky  → exit 2, emit one finding for verify-no-leak
+#   broken → exit 5, emit a config error
+#
+# Recognised invocations:
+#   kit --version
+#   kit conformance verify-no-leak ... --format=json
+#   kit conformance verify-stories ... --format=json
+#   kit conformance badge --matrix=... --output=...
+set -euo pipefail
+
+mode="${KIT_STUB_MODE:-clean}"
+
+case "${1:-}" in
+  --version)
+    echo "kit stub v0.0.0-smoke"
+    exit 0
+    ;;
+  conformance)
+    shift
+    leaf="${1:-}"
+    shift || true
+    case "$leaf" in
+      verify-no-leak)
+        if [ "$mode" = "leaky" ]; then
+          cat <<'JSON'
+{"findings":[{"code":"LEAK_DETECTED","rule":"scenario_block","path":"cmd/leaky.go","line":42,"message":"scenario-shaped block detected"}]}
+JSON
+          exit 2
+        elif [ "$mode" = "broken" ]; then
+          echo '{"error":"bad allowlist","code":"CONFIG"}'
+          exit 5
+        fi
+        echo '{"findings":[]}'
+        exit 0
+        ;;
+      verify-stories)
+        if [ "$mode" = "leaky" ]; then
+          echo '{"findings":[{"code":"STORY_MISSING","path":"cmd/leaky.go","message":"no story doc for leaf"}]}'
+          exit 2
+        fi
+        echo '{"findings":[]}'
+        exit 0
+        ;;
+      badge)
+        # Parse --matrix=<path> --output=<path>
+        matrix=""; out=".12fcc.json"
+        for arg in "$@"; do
+          case "$arg" in
+            --matrix=*) matrix="${arg#--matrix=}" ;;
+            --output=*) out="${arg#--output=}" ;;
+            -o)         shift; out="${1:-.12fcc.json}" ;;
+          esac
+        done
+        # Determine colour from the matrix: any "fail" → red, all "pass" → green, else lightgrey.
+        if [ -n "$matrix" ] && [ -f "$matrix" ]; then
+          color=$(python3 -c "
+import json,sys
+m=json.load(open('$matrix'))
+s={f['status'] for f in m['factors']}
+print('red' if 'fail' in s else ('brightgreen' if s=={'pass'} else 'lightgrey'))
+")
+        else
+          color="lightgrey"
+        fi
+        cat >"$out" <<JSON
+{"schemaVersion":1,"label":"12fcc","message":"${color/brightgreen/pass}","color":"$color"}
+JSON
+        echo "wrote $out"
+        exit 0
+        ;;
+      *)
+        echo "stub: unknown leaf $leaf" >&2
+        exit 3
+        ;;
+    esac
+    ;;
+  *)
+    echo "stub: unknown command $1" >&2
+    exit 3
+    ;;
+esac

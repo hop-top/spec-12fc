@@ -1,0 +1,219 @@
+name: '12-Factor CLI Conformance'
+description: 'Verify a CLI conforms to the 12-factor AI-CLI specification. Emits a JSON report, a shields.io endpoint-badge JSON, and (optionally) SARIF for PR annotations.'
+author: 'ideacrafterslabs'
+branding:
+  icon: 'check-square'
+  color: 'green'
+
+inputs:
+  command:
+    description: |
+      Conformance scope. One of:
+        all              run every applicable leaf and aggregate
+        verify-no-leak   scenario-leak gate
+        verify-stories   story-doc conformance
+        grade            upload a cassette to a grading service
+      Defaults to `all`.
+    required: false
+    default: 'all'
+
+  paths:
+    description: 'Comma-separated paths to check (e.g. "cmd/,internal/"). Defaults to the repo root.'
+    required: false
+    default: '.'
+
+  diff:
+    description: |
+      Diff selector for verify-no-leak. One of:
+        auto        derive from GITHUB_BASE_REF...GITHUB_SHA on PRs, empty on push
+        staged      git diff --cached
+        <revspec>   any git revspec (e.g. main...HEAD)
+        ""          disable diff mode, scan all `paths`
+      Defaults to `auto`.
+    required: false
+    default: 'auto'
+
+  cassette-dir:
+    description: 'Cassette directory for `command: grade`. Required when command=grade.'
+    required: false
+    default: ''
+
+  grade-service:
+    description: 'Grade service URL. Alternatively set KIT_CONFORMANCE_SERVICE env.'
+    required: false
+    default: ''
+
+  grade-token:
+    description: 'Bearer token for grade service. Alternatively set KIT_CONFORMANCE_TOKEN env.'
+    required: false
+    default: ''
+
+  grade-tier:
+    description: 'Grade tier (1/2/3). Default 1.'
+    required: false
+    default: '1'
+
+  fail-on:
+    description: |
+      Comma-separated exit codes that should fail the job. Default `2,3,5`
+      (leak, usage, config). Code 4 (IO/retryable) is excluded by default
+      so flaky network does not red-light the build.
+    required: false
+    default: '2,3,5'
+
+  kit-version:
+    description: 'kit binary version to install (e.g. v0.4.0-alpha.3, or "latest").'
+    required: false
+    default: 'latest'
+
+  report-path:
+    description: 'Path to write the aggregated JSON report.'
+    required: false
+    default: '12fcc-report.json'
+
+  badge-path:
+    description: 'Path to write the shields.io endpoint-badge JSON.'
+    required: false
+    default: '.12fcc.json'
+
+  matrix-path:
+    description: 'Path to write the per-factor matrix JSON consumed by the badge generator.'
+    required: false
+    default: '12fcc-matrix.json'
+
+  sarif-path:
+    description: 'Path to write SARIF (empty disables SARIF generation).'
+    required: false
+    default: '12fcc.sarif'
+
+  upload-sarif:
+    description: 'Upload SARIF to GitHub code-scanning so findings annotate the PR diff.'
+    required: false
+    default: 'true'
+
+  pr-comment:
+    description: 'Post / update a sticky PR comment with the verdict.'
+    required: false
+    default: 'true'
+
+  commit-badge:
+    description: |
+      Commit the badge JSON back to the repo on push events to the
+      default branch (so the README badge URL stays current). Off by
+      default to keep the Action side-effect-free unless opted in.
+    required: false
+    default: 'false'
+
+  commit-badge-branch:
+    description: 'Branch to commit the badge to when commit-badge is true.'
+    required: false
+    default: 'main'
+
+outputs:
+  exit-code:
+    description: 'Aggregate exit code (max of all leaves run).'
+    value: ${{ steps.run.outputs.exit-code }}
+  findings-count:
+    description: 'Total finding count across all leaves.'
+    value: ${{ steps.run.outputs.findings-count }}
+  verdict:
+    description: 'Overall verdict: pass | fail | ungradable.'
+    value: ${{ steps.run.outputs.verdict }}
+  report-path:
+    description: 'Resolved path to the JSON report.'
+    value: ${{ steps.run.outputs.report-path }}
+  badge-path:
+    description: 'Resolved path to the badge JSON.'
+    value: ${{ steps.run.outputs.badge-path }}
+  badge-url:
+    description: 'shields.io URL that renders the badge.'
+    value: ${{ steps.run.outputs.badge-url }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install kit binary
+      shell: bash
+      run: ${{ github.action_path }}/scripts/install-kit.sh
+      env:
+        INPUT_KIT_VERSION: ${{ inputs.kit-version }}
+        GH_TOKEN: ${{ github.token }}
+
+    - name: Run conformance
+      id: run
+      shell: bash
+      run: ${{ github.action_path }}/scripts/run.sh
+      env:
+        INPUT_COMMAND: ${{ inputs.command }}
+        INPUT_PATHS: ${{ inputs.paths }}
+        INPUT_DIFF: ${{ inputs.diff }}
+        INPUT_CASSETTE_DIR: ${{ inputs.cassette-dir }}
+        INPUT_GRADE_SERVICE: ${{ inputs.grade-service }}
+        INPUT_GRADE_TOKEN: ${{ inputs.grade-token }}
+        INPUT_GRADE_TIER: ${{ inputs.grade-tier }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_REPORT_PATH: ${{ inputs.report-path }}
+        INPUT_BADGE_PATH: ${{ inputs.badge-path }}
+        INPUT_MATRIX_PATH: ${{ inputs.matrix-path }}
+        INPUT_SARIF_PATH: ${{ inputs.sarif-path }}
+        GITHUB_BASE_REF: ${{ github.base_ref }}
+        GITHUB_HEAD_REF: ${{ github.head_ref }}
+        GITHUB_SHA: ${{ github.sha }}
+
+    - name: Upload report artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: 12fcc-report
+        path: |
+          ${{ steps.run.outputs.report-path }}
+          ${{ steps.run.outputs.badge-path }}
+          ${{ inputs.matrix-path }}
+          ${{ inputs.sarif-path }}
+        if-no-files-found: warn
+
+    - name: Upload SARIF
+      if: always() && inputs.upload-sarif == 'true' && inputs.sarif-path != ''
+      uses: github/codeql-action/upload-sarif@v3
+      continue-on-error: true
+      with:
+        sarif_file: ${{ inputs.sarif-path }}
+        category: 12fcc
+
+    - name: Sticky PR comment
+      if: always() && inputs.pr-comment == 'true' && github.event_name == 'pull_request'
+      shell: bash
+      run: ${{ github.action_path }}/scripts/pr-comment.sh
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        REPO: ${{ github.repository }}
+        REPORT_PATH: ${{ steps.run.outputs.report-path }}
+        BADGE_URL: ${{ steps.run.outputs.badge-url }}
+        VERDICT: ${{ steps.run.outputs.verdict }}
+
+    - name: Commit badge to default branch
+      if: |
+        success() &&
+        inputs.commit-badge == 'true' &&
+        github.event_name == 'push' &&
+        github.ref == format('refs/heads/{0}', inputs.commit-badge-branch)
+      shell: bash
+      run: ${{ github.action_path }}/scripts/commit-badge.sh
+      env:
+        BADGE_PATH: ${{ steps.run.outputs.badge-path }}
+        TARGET_BRANCH: ${{ inputs.commit-badge-branch }}
+        GH_TOKEN: ${{ github.token }}
+
+    - name: Enforce verdict
+      shell: bash
+      run: |
+        ec="${{ steps.run.outputs.exit-code }}"
+        IFS=',' read -ra fail_codes <<< "${{ inputs.fail-on }}"
+        for c in "${fail_codes[@]}"; do
+          if [ "$ec" = "$c" ]; then
+            echo "::error::12fcc failed with exit code $ec (in fail-on=${{ inputs.fail-on }})"
+            exit "$ec"
+          fi
+        done
+        echo "12fcc exit code $ec is not in fail-on list; treating as pass"

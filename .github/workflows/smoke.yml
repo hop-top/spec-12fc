@@ -1,0 +1,38 @@
+name: smoke
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  script-smoke:
+    name: Action scripts (stubbed kit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run smoke tests
+        run: bash test/smoke.sh
+
+  self-host:
+    name: Action self-host (real kit on fixture)
+    runs-on: ubuntu-latest
+    needs: script-smoke
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run the Action against itself
+        uses: ./
+        with:
+          command: verify-no-leak
+          paths: scripts/,examples/
+          # Don't fail this matrix on real findings while bootstrapping;
+          # the script-smoke job is the authoritative gate.
+          fail-on: ''
+          pr-comment: false
+          upload-sarif: false

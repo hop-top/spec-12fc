@@ -10,7 +10,10 @@ set -uo pipefail
 
 COMMAND="${INPUT_COMMAND:-all}"
 PATHS_CSV="${INPUT_PATHS:-.}"
-DIFF="${INPUT_DIFF:-auto}"
+# Default to `auto` only when INPUT_DIFF is unset. An explicit empty
+# string (diff: "") is honoured as "disable diff mode, scan paths" —
+# `:-` would wrongly collapse that back to auto, so use `-` (unset-only).
+DIFF="${INPUT_DIFF-auto}"
 CASSETTE_DIR="${INPUT_CASSETTE_DIR:-}"
 GRADE_SERVICE="${INPUT_GRADE_SERVICE:-}"
 GRADE_TOKEN="${INPUT_GRADE_TOKEN:-}"
@@ -94,9 +97,16 @@ for leaf in "${leaves[@]}"; do
   set +e
   case "$leaf" in
     verify-no-leak)
+      # kit rejects --diff and --paths together (mutually exclusive scan
+      # sources). Prefer diff mode when a diff was resolved (the default on
+      # PRs); otherwise scan the configured paths. Never pass both.
+      if [ -n "$DIFF_FLAG" ]; then
+        scan_flag="$DIFF_FLAG"
+      else
+        scan_flag="${PATHS_CSV:+$PATHS_FLAG}"
+      fi
       kit conformance verify-no-leak \
-        ${DIFF_FLAG:+$DIFF_FLAG} \
-        ${PATHS_CSV:+$PATHS_FLAG} \
+        ${scan_flag:+$scan_flag} \
         --format=json >"$out" 2>&1
       rc=$?
       ;;

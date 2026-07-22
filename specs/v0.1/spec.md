@@ -68,11 +68,14 @@ All outputs MUST support a stable, machine-readable format.
 - Diffs
 
 ### Channel discipline
-- Structured output (the machine contract) MUST be written to **stdout**.
-- Logs, progress, spinners, warnings, and prompts MUST be written to **stderr**.
-- A non-empty stdout MUST be parseable as a single document (or stream of documents) of the declared format.
+- Primary command output MUST be written to **stdout**.
+- Human messaging, logs, progress, spinners, warnings, prompts, and errors MUST be written to **stderr**.
+- Machine-readable success output MUST be written to **stdout**.
+- Machine-readable diagnostics, including structured errors and warnings, MUST be written to **stderr**, unless a command explicitly documents a stdout result envelope that can represent both success and failure.
+- In a declared machine-readable mode, any non-empty stdout MUST be parseable as a single document (or stream of documents) of the declared format.
 - The CLI MUST accept an opt-in flag to force structured output (e.g. `--json`, `--output json`).
-- If a `--quiet` mode is provided, it MUST emit bare values (one per line) suitable for pipe consumption.
+- If a plain/script mode is provided (e.g. `--plain`), it MUST emit stable line-oriented output suitable for pipe consumption.
+- If a `--quiet` mode is provided, it MUST suppress non-essential human output; it MUST NOT change the structured schema or become the only way to get pipe-safe output.
 
 ### Shape rules
 - **Flat over nested**: prefer `{"pod_name": "web-1"}` over deeply nested wrappers when the depth carries no semantics.
@@ -81,7 +84,7 @@ All outputs MUST support a stable, machine-readable format.
 - **No interleaving**: machine output on stdout MUST NOT be mixed with human-oriented framing (banners, ANSI colors, progress bars).
 
 ### Rationale
-Automation requires reliable parsing. Channel separation lets agents capture the contract while still surfacing diagnostics; shape discipline keeps downstream parsers from breaking on cosmetic changes.
+Automation requires reliable parsing. Channel separation lets agents capture primary outputs from stdout while preserving diagnostics on stderr; shape discipline keeps downstream parsers from breaking on cosmetic changes.
 
 ---
 

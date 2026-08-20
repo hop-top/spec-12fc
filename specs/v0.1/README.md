@@ -5,6 +5,11 @@
 
 First published version of the 12-Factor AI-CLI specification.
 
+This spec builds on the human-first CLI design guidance in the
+[Command Line Interface Guidelines](https://clig.dev). It narrows that
+guidance for AI-enabled CLIs by making machine contracts, structured
+diagnostics, previewability, idempotency, and evolution guarantees explicit.
+
 ## Files
 
 | File | What |

@@ -249,9 +249,11 @@ Failure classes MUST be distinguished via exit code so agents can branch on `$?`
 | 1 | general / unclassified failure |
 | 2 | usage error (bad arguments, unknown flags) |
 | 3 | resource not found |
-| 4 | permission denied / authentication failure |
-| 5 | conflict (resource already exists, version mismatch) |
+| 4 | conflict (resource already exists, version mismatch) |
+| 5 | permission denied / authentication failure |
 | 6 | transient / retryable failure (rate limit, timeout) |
+
+Codes `0` through `5` match the exit-code assignment already established across existing tooling, which predates this spec; they are recorded here rather than reassigned, so that agents branching on `$?` see one numbering everywhere.
 
 Codes above 6 MAY be defined per-tool and MUST appear in the capability surface.
 

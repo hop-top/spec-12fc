@@ -1,0 +1,13 @@
+name: version-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    uses: hop-top/.github/.github/workflows/version-check.yml@v0

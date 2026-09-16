@@ -3,12 +3,11 @@
 # All targets idempotent, run from repo root. CI mirrors these in
 # .github/workflows/validate.yml; keep them in sync.
 
-PYTHON ?= python3
 MARKDOWNLINT ?= markdownlint-cli2
 
 MD_GLOBS := **/*.md \#node_modules
 
-.PHONY: help lint lint-md test-scripts ci check-tools hooks
+.PHONY: help lint lint-md ci check-tools hooks
 
 help: ## Show this help.
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-16s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -28,11 +27,7 @@ lint-md: ## Lint markdown via markdownlint-cli2.
 	}
 	$(MARKDOWNLINT) $(MD_GLOBS)
 
-test-scripts: ## Run unit tests for .github/scripts.
-	$(PYTHON) -m unittest discover -s .github/scripts/tests -v
-
-ci: lint test-scripts ## Run everything CI runs (lint + tests).
+ci: lint ## Run everything CI runs locally (lint; the spec gates run as shared workflows).
 
 check-tools: ## Report which tools are installed.
-	@printf 'python:        '; command -v $(PYTHON) || echo MISSING
 	@printf 'markdownlint:  '; command -v $(MARKDOWNLINT) || echo MISSING

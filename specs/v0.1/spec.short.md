@@ -1,6 +1,6 @@
 # AI-Enabled CLI: 12-Factor Spec
 
-Status: Draft
+**Status:** Draft
 Purpose: Design principles for CLIs safe/reliable for humans + AI agents.
 
 ## Defs

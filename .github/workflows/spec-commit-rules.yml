@@ -1,0 +1,14 @@
+name: spec-commit-rules
+
+on:
+  pull_request:
+    paths:
+      - "specs/**"
+
+permissions:
+  contents: read
+
+jobs:
+  rules:
+    name: spec commit rules
+    uses: hop-top/.github/.github/workflows/spec-commit-rules.yml@v0

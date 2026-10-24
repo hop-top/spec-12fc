@@ -6,6 +6,13 @@
 
 set -euo pipefail
 
+# Chain to the global pre-push (attribution guard): a local core.hooksPath
+# replaces the global hooks directory instead of adding to it.
+global_hooks=$(git config --global --type=path core.hooksPath 2>/dev/null || true)
+if [[ -n "$global_hooks" && -x "$global_hooks/pre-push" ]]; then
+  "$global_hooks/pre-push" "$@" || exit $?
+fi
+
 cd "$(git rev-parse --show-toplevel)"
 
 echo "==> pre-push: running make ci"

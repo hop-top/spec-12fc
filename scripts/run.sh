@@ -10,6 +10,9 @@ set -uo pipefail
 
 COMMAND="${INPUT_COMMAND:-all}"
 PATHS_CSV="${INPUT_PATHS:-.}"
+# verify-stories gets its own paths: empty leaves kit's default (e2e/stories),
+# so a repo-root scan never parses unrelated YAML as stories.
+STORIES_CSV="${INPUT_STORIES_PATHS:-}"
 # Default to `auto` only when INPUT_DIFF is unset. An explicit empty
 # string (diff: "") is honoured as "disable diff mode, scan paths" —
 # `:-` would wrongly collapse that back to auto, so use `-` (unset-only).
@@ -112,7 +115,7 @@ for leaf in "${leaves[@]}"; do
       ;;
     verify-stories)
       kit conformance verify-stories \
-        ${PATHS_CSV:+$PATHS_FLAG} \
+        ${STORIES_CSV:+--paths=$STORIES_CSV} \
         --format=json >"$out" 2>&1
       rc=$?
       ;;

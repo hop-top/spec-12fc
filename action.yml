@@ -18,9 +18,14 @@ inputs:
     default: 'all'
 
   paths:
-    description: 'Comma-separated paths to check (e.g. "cmd/,internal/"). Defaults to the repo root.'
+    description: 'Comma-separated paths for verify-no-leak (e.g. "cmd/,internal/"). Defaults to the repo root.'
     required: false
     default: '.'
+
+  stories-paths:
+    description: 'Comma-separated story paths for verify-stories. Defaults to kit''s story directory (e2e/stories).'
+    required: false
+    default: ''
 
   diff:
     description: |
@@ -151,6 +156,7 @@ runs:
       env:
         INPUT_COMMAND: ${{ inputs.command }}
         INPUT_PATHS: ${{ inputs.paths }}
+        INPUT_STORIES_PATHS: ${{ inputs.stories-paths }}
         INPUT_DIFF: ${{ inputs.diff }}
         INPUT_CASSETTE_DIR: ${{ inputs.cassette-dir }}
         INPUT_GRADE_SERVICE: ${{ inputs.grade-service }}

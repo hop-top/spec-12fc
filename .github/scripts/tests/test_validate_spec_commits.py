@@ -18,8 +18,24 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPT = REPO_ROOT / ".github" / "scripts" / "validate_spec_commits.py"
 
 
+# Variables that point git at a repository (GIT_DIR, GIT_INDEX_FILE, ...).
+# A git hook exports them; inherited, they would aim the throwaway test
+# repos at the real one.
+_REPO_VARS = subprocess.run(
+    ["git", "rev-parse", "--local-env-vars"],
+    check=True, capture_output=True, text=True,
+).stdout.split()
+
+
+def _clean_env() -> dict[str, str]:
+    env = os.environ.copy()
+    for var in _REPO_VARS:
+        env.pop(var, None)
+    return env
+
+
 def _git(cwd: Path, *args: str, env: dict[str, str] | None = None) -> str:
-    full_env = os.environ.copy()
+    full_env = _clean_env()
     # Stable identity so SHAs are deterministic within a test.
     full_env.update({
         "GIT_AUTHOR_NAME": "Test",
@@ -49,7 +65,7 @@ def _commit(cwd: Path, files: dict[str, str], message: str) -> str:
 
 
 def _run_script(repo: Path, base: str, head: str) -> subprocess.CompletedProcess:
-    env = os.environ.copy()
+    env = _clean_env()
     env["BASE_SHA"] = base
     env["HEAD_SHA"] = head
     return subprocess.run(

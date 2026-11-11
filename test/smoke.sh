@@ -157,6 +157,33 @@ else ok "injection rejected; no pwned file"; fi
 if grep -q "rejected unsafe --diff" "$tmp/stderr"; then ok "warning surfaced"
 else fail "expected rejection warning on stderr"; fi
 
+# Scenario 5: kit-version=preinstalled uses the kit already on PATH and
+# installs nothing; without a kit on PATH it is a usage error (3).
+step "scenario: preinstalled kit"
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' RETURN
+mkdir -p "$tmp/pre" "$tmp/action" "$tmp/nokit"
+cp "$root/test/stubs/kit" "$tmp/pre/kit"; chmod +x "$tmp/pre/kit"
+: >"$tmp/gh_path"
+set +e
+PATH="$tmp/pre:$PATH" INPUT_KIT_VERSION=preinstalled GITHUB_ACTION_PATH="$tmp/action" \
+  GITHUB_PATH="$tmp/gh_path" bash "$root/scripts/install-kit.sh" >"$tmp/stdout" 2>&1
+rc=$?
+set -e
+assert_eq "$rc" "0" "preinstalled exit"
+if grep -q "kit stub v0.0.0-smoke" "$tmp/stdout"; then ok "preinstalled kit version printed"
+else fail "expected the preinstalled kit's version in the log"; fi
+if [ -s "$tmp/gh_path" ] || [ -e "$tmp/action/bin" ]; then fail "preinstalled mode installed kit or edited PATH"
+else ok "nothing installed, PATH untouched"; fi
+# a PATH holding only bash: no kit to find
+ln -s "$(command -v bash)" "$tmp/nokit/bash"
+set +e
+PATH="$tmp/nokit" INPUT_KIT_VERSION=preinstalled GITHUB_ACTION_PATH="$tmp/action" \
+  GITHUB_PATH="$tmp/gh_path" "$tmp/nokit/bash" "$root/scripts/install-kit.sh" >"$tmp/stdout" 2>&1
+rc=$?
+set -e
+assert_eq "$rc" "3" "preinstalled without kit exit"
+
 printf "\n\033[1m── summary ──\033[0m\n"
 printf "  pass: \033[1;32m%d\033[0m\n" "$pass_count"
 printf "  fail: \033[1;31m%d\033[0m\n" "$fail_count"

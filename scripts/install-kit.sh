@@ -2,10 +2,24 @@
 # Install the kit binary into $GITHUB_ACTION_PATH/bin and prepend it to PATH.
 # Source of truth: GitHub releases on hop-top/kit. Falls back to `go install`
 # when a prebuilt asset is unavailable for the runner triple.
+# `preinstalled` installs nothing: the caller put kit on PATH in an earlier
+# step (e.g. built from source, or the same build that serves `grade`).
 set -euo pipefail
 
 VERSION="${INPUT_KIT_VERSION:-main}"
 REPO="hop-top/kit"
+
+if [ "$VERSION" = "preinstalled" ]; then
+  if ! command -v kit >/dev/null 2>&1; then
+    echo "::error::kit-version is 'preinstalled' but no kit binary is on PATH"
+    exit 3
+  fi
+  echo "::group::Using preinstalled kit ($(command -v kit))"
+  kit --version || true
+  echo "::endgroup::"
+  exit 0
+fi
+
 ACTION_BIN_DIR="${GITHUB_ACTION_PATH:-$(pwd)}/bin"
 mkdir -p "$ACTION_BIN_DIR"
 

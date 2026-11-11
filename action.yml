@@ -72,6 +72,8 @@ inputs:
         latest    resolve to the newest GitHub release tag, then install
         vX.Y.Z   any concrete tag (prebuilt asset if available, else go install)
         main      install from HEAD via `go install hop.top/kit/cmd/kit@main`
+        preinstalled  install nothing; use the kit an earlier step put on PATH
+                  (e.g. the build that also serves `grade` in the same job)
       Defaults to `latest` — pinned tag, reproducible run logs.
     required: false
     default: 'latest'

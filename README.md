@@ -76,6 +76,16 @@ See [`specs/v0.1/examples/workflow.yml`](specs/v0.1/examples/workflow.yml).
 
 Factors without an active leaf fall back to `skip` in the matrix (grey).
 
+### Grading in the same job
+
+`grade` needs a grading service. A job can run its own: start
+`kit conformance svc serve` on `127.0.0.1`, mint a token with
+`kit conformance svc token mint`, record a cassette with
+`kit conformance harness record`, then pass `cassette-dir`,
+`grade-service` and `grade-token`. Set `kit-version: preinstalled` so the
+Action runs every leaf with the kit build that serves the grade instead of
+installing another one.
+
 ## The spec
 
 The full specification lives in [`specs/v0.1/spec.md`](specs/v0.1/spec.md). This Action is the executable counterpart: every `MUST` in the spec maps to a check the gate enforces.
